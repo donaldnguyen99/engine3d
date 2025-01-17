@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "engine3d"
+authors = [
+    {name = "Donald Nguyen", email = "donaldnguyen99@gmail.com"},
+]
+description = "A basic 3D rendering engine built with Python and Pygame"
+readme = "README.rst"
+requires-python = ">=3.7"
+keywords = ["3D", "engine", "rendering", "pygame"]
+license = {file = "LICENSE"}
+classifiers = [
+    "Framework :: Pygame",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "pygame",
+    'importlib-metadata; python_version<"3.8"',
+]
+dynamic = ["version"]
+
+# [project.optional-dependencies]
+# pdf = ["ReportLab>=1.2", "RXP"]
+# rest = ["docutils>=0.3", "pack ==1.1, ==1.3"]
+
+[project.scripts]
+engine3d = "engine3d.engine3d:main"
+
+
+
+
+# ... other project metadata fields as specified in:
+#     https://packaging.python.org/en/latest/specifications/declaring-project-metadata/

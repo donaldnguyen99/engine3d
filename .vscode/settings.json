@@ -1,0 +1,15 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "docwriter.progress.trackTypes": true,
+    "docwriter.progress.trackMethods": true,
+    "docwriter.style": "Auto-detect",
+    "docwriter.progress.trackFunctions": false
+}
