@@ -1,70 +1,88 @@
 from abc import ABC, abstractmethod
 from collections import abc
 from functools import cached_property
+from typing import Union
 
+import inspect
 import numpy as np
 
 
 class VectorBase(ABC):
 
     dim: int
-    array: np.ndarray
     EPSILON: float = 1e-15
 
-    @abstractmethod
     def __init__(self, *args: float) -> None:
         """
         Initialize a vector.
         """
+        self.array = np.empty(self.dim)
+        arg_names_and_vals = [(key, value) for key, value in inspect.getcallargs(self.__init__, *args).items() if key != "self"]
+        self.lookup = {arg[0]: i for i, arg in enumerate(arg_names_and_vals)}
+        for i, arg in enumerate(arg_names_and_vals):
+            setattr(self, arg[0], arg[1])
+        print("print from vectorbase: ", str(arg_names_and_vals))
+
+    @property
+    @abstractmethod
+    def dim(self) -> int:
+        """
+        Returns the dimension of this vector.
+
+        Returns:
+            int: The dimension of this vector.
+        """
         pass
-
-    @property
-    def x(self) -> float:
-        """
-        Returns the x component of this vector.
-
-        Returns:
-            float: The x component of this vector.
-        """
-        return self.array[0]
     
-    @x.setter
-    def x(self, value: float) -> None:
+    def __setitem__(self, index: int, value: float) -> None:
         """
-        Set the x component of this vector.
+        Set the value of the vector at the given index.
 
         Args:
-            value (float): The value to set the x component to.
+            index (int): The index of the value to set.
+            value (float): The value to set.
         """
-        self.array[0] = value
+        self.array[index] = value
         if hasattr(self, "magnitude"):
             del self.magnitude
         if hasattr(self, "magnitude_squared"):
             del self.magnitude_squared
-    
-    @property
-    def y(self) -> float:
-        """
-        Returns the y component of this vector.
 
-        Returns:
-            float: The y component of this vector.
+    def __getitem__(self, index: int) -> float:
         """
-        return self.array[1]
-    
-    @y.setter
-    def y(self, value: float) -> None:
-        """
-        Set the y component of this vector.
+        Get the value of the vector at the given index.
 
         Args:
-            value (float): The value to set the y component to.
+            index (int): The index of the value to get.
+
+        Returns:
+            float: The value of the vector at the given index.
         """
-        self.array[1] = value
-        if hasattr(self, "magnitude"):
-            del self.magnitude
-        if hasattr(self, "magnitude_squared"):
-            del self.magnitude_squared
+        return self.array[index]
+
+    def __setattr__(self, name, value):
+        if name in {"array", "lookup"}:
+            super().__setattr__(name, value)
+            return
+        
+        # The above code is needed to avoid infinite recursion
+        if name in self.lookup:
+            self.array[self.lookup[name]] = value
+            if hasattr(self, "magnitude"):
+                del self.magnitude
+            if hasattr(self, "magnitude_squared"):
+                del self.magnitude_squared
+        else:
+            super().__setattr__(name, value)
+
+    def __getattr__(self, name):
+        if name in {"array", "lookup"}:
+            return super().__getattr__(name)
+        
+        if name in self.lookup:
+            return self.array[self.lookup[name]]
+        else:
+            return super().__getattr__(name)
 
     def __add__(self, other: "VectorBase") -> "VectorBase":
         """
@@ -89,7 +107,7 @@ class VectorBase(ABC):
             VectorBase: A new vector representing the result of the subtraction.
         """
         return self.__class__(*(self.array - other.array))
-    
+
     def __mul__(self, other) -> "VectorBase":
         """
         Multiply this vector by a scalar, vector, or matrix.
@@ -162,8 +180,9 @@ class VectorBase(ABC):
         Returns:
             bool: True if the vectors are equal, False otherwise.
         """
-        return np.allclose(self.array, other.array, 
-                           rtol=self.EPSILON, atol=self.EPSILON)
+        return np.allclose(
+            self.array, other.array, rtol=self.EPSILON, atol=self.EPSILON
+        )
 
     def __ne__(self, other: "VectorBase") -> bool:
         """
@@ -249,7 +268,7 @@ class VectorBase(ABC):
         """
         return np.dot(self.array, other.array)
 
-    def cross(self, other: "VectorBase") -> float:
+    def cross(self, other: "VectorBase") -> Union[float, "VectorBase"]:
         """
         Returns the cross product of this vector and another vector.
 
@@ -259,7 +278,14 @@ class VectorBase(ABC):
         Returns:
             float: The cross product of this vector and the other vector.
         """
-        return np.cross(self.array, other.array)
+        if self.dim != other.dim:
+            raise ValueError("Cross product is only defined for 2D or 3D vectors of the same dimension.")
+        if self.dim == 2:
+            return np.cross(self.array, other.array)
+        elif self.dim == 3:
+            return self.__class__(*(np.cross(self.array, other.array)))
+        else:
+            raise ValueError("Cross product is only defined for 2D and 3D vectors.")
 
     def normalize(self) -> "VectorBase":
         """
@@ -341,27 +367,19 @@ class VectorBase(ABC):
         return (self.array - other.array).dot(self.array - other.array)
 
     @abstractmethod
-    def rotate(self, angle: float, axis: "VectorBase") -> "VectorBase":
+    def rotate(self, *args) -> "VectorBase":
         """
         Rotates the vector around the given axis in place and returns it.
 
-        Args:
-            angle (float): The angle to rotate by in radians.
-            axis (VectorBase): The axis to rotate around.
-
         Returns:
-            None
+            The vector rotated around the given axis.
         """
         pass
 
     @abstractmethod
-    def rotated(self, angle: float, axis: "VectorBase") -> "VectorBase":
+    def rotated(self, *args) -> "VectorBase":
         """
         Returns a new vector rotated around the given axis.
-
-        Args:
-            angle (float): The angle to rotate by in radians.
-            axis (VectorBase): The axis to rotate around.
 
         Returns:
             VectorBase: A new vector rotated around the given axis.
@@ -379,7 +397,8 @@ class VectorBase(ABC):
             float: The angle between this vector and the other vector.
         """
         assert self.magnitude != 0 and other.magnitude != 0
-        if self == other: return 0
+        if self == other:
+            return 0
         return np.arccos(self.dot(other) / (self.magnitude * other.magnitude))
 
     def lerp(self, other: "VectorBase", t: float) -> "VectorBase":
@@ -431,21 +450,22 @@ class VectorBase(ABC):
         """
         normal_normalized = normal.normalized()
         return self - normal_normalized * 2 * self.dot(normal_normalized)
-    
+
     def refract(self, normal: "VectorBase", eta: float) -> "VectorBase":
         """
         Returns a new vector refracted across a normal vector.
 
         Args:
             normal (VectorBase): The normal vector to refract across.
-            eta (float): The relative index of refraction between media of the 
+            eta (float): The relative index of refraction between media of the
             incident and refracted rays, respectively.
 
         Returns:
             VectorBase: A new vector refracted across the normal vector.
         """
         # Self and normal are not normalized
-        if eta == 0.0: return self.__class__.zero()
+        if eta == 0.0:
+            return self.__class__.zero()
         self_normalized = self.normalized()
         normal_normalized = normal.normalized()
         cosi = normal_normalized.dot(self_normalized)
@@ -457,7 +477,9 @@ class VectorBase(ABC):
         if k < 0.0:
             return self.__class__.zero()
         else:
-            return (self_normalized * eta + normal_normalized * (eta * cosi - k**0.5)) * self.magnitude
+            return (
+                self_normalized * eta + normal_normalized * (eta * cosi - k**0.5)
+            ) * self.magnitude
 
     def to_tuple(self) -> tuple[float, float]:
         """
@@ -486,7 +508,6 @@ class VectorBase(ABC):
         """
         return set(self.array)
 
-    @abstractmethod
     def to_dict(self) -> dict[str, float]:
         """
         Returns a dictionary representation of this vector.
@@ -494,7 +515,7 @@ class VectorBase(ABC):
         Returns:
             dict[str, float]: A dictionary representation of this vector.
         """
-        pass
+        return {f"{i}": self.array[self.lookup[i]] for i in self.lookup}
 
     def to_bytes(self) -> bytes:
         """
@@ -512,8 +533,8 @@ class VectorBase(ABC):
         Returns:
             VectorBase: An array representation of this vector.
         """
-        return self.array
-    
+        return self.array.copy() 
+
     def copy(self) -> "VectorBase":
         """
         Returns a copy of this vector.

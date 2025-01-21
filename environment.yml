@@ -1,0 +1,15 @@
+name: engine3d
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python>=3.8, <3.13
+  - pytest
+  - pytest-cov
+  - ipykernel
+  - ipython
+  - matplotlib
+  - numpy
+  - numba
+  - conda-forge::pygame
+prefix: C:\ProgramData\Anaconda3\envs\pygame

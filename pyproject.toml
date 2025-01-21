@@ -8,8 +8,8 @@ authors = [
     {name = "Donald Nguyen", email = "donaldnguyen99@gmail.com"},
 ]
 description = "A basic 3D rendering engine built with Python and Pygame"
-readme = "README.rst"
-requires-python = ">=3.7"
+readme = "README.md"
+requires-python = ">=3.10"
 keywords = ["3D", "engine", "rendering", "pygame"]
 license = {file = "LICENSE"}
 classifiers = [
@@ -17,12 +17,18 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
+    "numpy",
+    "numba",
     "pygame",
     'importlib-metadata; python_version<"3.8"',
 ]
 dynamic = ["version"]
 
-# [project.optional-dependencies]
+[project.optional-dependencies]
+tests = [
+    'pytest',
+    'pytest-cov',
+]
 # pdf = ["ReportLab>=1.2", "RXP"]
 # rest = ["docutils>=0.3", "pack ==1.1, ==1.3"]
 
