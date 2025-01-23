@@ -60,6 +60,10 @@ class TestVector2D(TestCase):
         assert v1 == Vector2D(6, 8)
         v1 *= 0.5
         assert v1 == Vector2D(3, 4)
+        with pytest.raises(NotImplementedError) as e:
+            v = Vector2D(1, 2) * Vector2D(3, 4)
+            assert e.type == NotImplementedError
+            assert "* operation" in str(e.value) and "is not allowed" in str(e.value)
 
     def test_vector2d_division(self):
         v1 = Vector2D(3, 4)
@@ -191,6 +195,14 @@ class TestVector2D(TestCase):
         assert v.magnitude_squared == 41
         v.y = 12
         assert v.magnitude_squared == 169
+
+    def test_vector2d_magnitude_cache_cleared(self):
+        v = Vector2D(3, 4)
+        v.magnitude
+        v.magnitude_squared
+        v.x = 5
+        assert "magnitude" not in v.__dict__
+        assert "magnitude_squared" not in v.__dict__
 
     def test_vector2d_length(self):
         v = Vector2D(3, 4)
@@ -394,3 +406,13 @@ class TestVector2D(TestCase):
         assert v != v.unit()
         v1 = Vector2D(0.6, 0.8)
         assert v1 == v.unit()
+
+    def test_vector2d_unit___setattr__(self):
+        v = Vector2D(3, 4)
+        v.unit = "cm"
+        assert hasattr(v, "unit")
+        assert v.unit == "cm"
+    
+    def test_vector2d_unit___getattr__(self):
+        v = Vector2D(3, 4)
+        v.unit = "cm"

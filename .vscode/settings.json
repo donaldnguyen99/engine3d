@@ -1,17 +1,20 @@
 {
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
-    "python.testing.pytestArgs": [
-        "tests", "--cov=src",
-        "-W", "ignore::DeprecationWarning", 
-        "-W", "ignore::RuntimeWarning",
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "docwriter.progress.trackTypes": true,
-    "docwriter.progress.trackMethods": true,
-    "docwriter.progress.trackFunctions": true,
-    "docwriter.progress.trackClasses": true,
-    "docwriter.style": "Google",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "docwriter.progress.trackClasses": true,
+  "docwriter.progress.trackFunctions": true,
+  "docwriter.progress.trackMethods": true,
+  "docwriter.progress.trackTypes": true,
+  "docwriter.style": "Google",
+  "python.testing.pytestArgs": [
+    "tests",
+    "--cov=src",
+    "-W",
+    "ignore::DeprecationWarning",
+    "-W",
+    "ignore::RuntimeWarning"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false
 }

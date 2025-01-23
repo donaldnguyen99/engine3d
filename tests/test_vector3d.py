@@ -42,6 +42,7 @@ class TestVector3D(TestCase):
     def test_vector3d_multiplication(self):
         v1 = Vector3D(3, 4, 5)
         v2 = v1 * 3
+        assert v2 is not None
         assert v2 == Vector3D(9, 12, 15)
         v3 = 3 * v1
         assert v3 == Vector3D(9, 12, 15)
@@ -49,3 +50,28 @@ class TestVector3D(TestCase):
         assert v1 == Vector3D(6, 8, 10)
         v1 *= 0.5
         assert v1 == Vector3D(3, 4, 5)
+    
+    def test_vector3d_division(self):
+        v1 = Vector3D(3, 4, 5)
+        v2 = v1 / 3
+        assert v2 == Vector3D(1, 4/3, 5/3)
+        v1 /= 2
+        assert v1 == Vector3D(1.5, 2, 2.5)
+        v1 /= 0.5
+        assert v1 == Vector3D(3, 4, 5)
+    
+    def test_vector3d_magnitude_squared(self):
+        v = Vector3D(3, 4, 5)
+        assert v.magnitude_squared == 50
+    
+    def test_vector3d_magnitude(self):
+        v = Vector3D(3, 4, 5)
+        assert v.magnitude == np.sqrt(50)
+    
+    def test_vector3d_magnitude_deleted(self):
+        v = Vector3D(3, 4, 5)
+        m = v.magnitude
+        m2 = v.magnitude_squared
+        v.x = 1
+        assert "magnitude" not in v.__dict__
+        assert "magnitude_squared" not in v.__dict__

@@ -14,6 +14,13 @@ class Vector2D(VectorBase):
 
     def __init__(self, x: float, y: float) -> None:
         super().__init__(x, y)
+    
+    def __mul__(self, other):
+        res = super().__mul__(other)
+        if res == NotImplemented:
+            raise NotImplementedError(f"* operation between Vector2D and {type(other)} \
+                             is not implemented. * must be followed by a scalar")
+        return res
 
     def rotate(self, angle: float) -> "VectorBase":
         """
@@ -49,6 +56,15 @@ class Vector3D(VectorBase):
 
     def __init__(self, x: float, y: float, z: float) -> None:
         super().__init__(x, y, z)
+    
+    
+    def __mul__(self, other):
+        res = super().__mul__(other)
+        if res == NotImplemented:
+            raise NotImplementedError(f"* operation between Vector3D and {type(other)} \
+                             is not implemented. * must be followed by a scalar")
+        return res
+
 
     def rotate(self, angle: float, axis: "VectorBase") -> "VectorBase":
         self = self.rotated(angle, axis)
@@ -69,7 +85,7 @@ class Vector3D(VectorBase):
         """
         v1_normalized = self.normalized()
         axis1 = Vector3D(1, 0, 0)
-        if abs(v1_normalized.dot(axis1) - 1) < self.EPSILON:
+        if abs(abs(v1_normalized.dot(axis1)) - 1) < self.EPSILON:
             axis1 = Vector3D(0, 0, 1)
         v2 = v1_normalized.rotated(np.pi / 2, axis1)
         v3 = v1_normalized.cross(v2)
@@ -102,5 +118,7 @@ class Vector3D(VectorBase):
         Returns:
             VectorBase: The rotated vector.
         """
-        pass
-        # TODO: Implement this method
+        if abs(abs(self.normalized().dot(Vector3D(0, 0, 1))) - 1) < self.EPSILON:
+            raise ValueError("The vector is parallel to the z-axis.")
+        axis1 = self.cross(Vector3D(0, 0, 1))
+        return self.rotated(elevation, axis1).rotated(azimuth, Vector3D(0, 0, 1))

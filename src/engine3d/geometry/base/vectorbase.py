@@ -32,7 +32,7 @@ class VectorBase(ABC):
         Returns:
             int: The dimension of this vector.
         """
-        pass
+        pass # need test to cover
     
     def __setitem__(self, index: int, value: float) -> None:
         """
@@ -77,12 +77,12 @@ class VectorBase(ABC):
 
     def __getattr__(self, name):
         if name in {"array", "lookup"}:
-            return super().__getattr__(name)
+            return super().__getattr__(name) # need test to cover
         
         if name in self.lookup:
             return self.array[self.lookup[name]]
         else:
-            return super().__getattr__(name)
+            return super().__getattr__(name) # need test to cover
 
     def __add__(self, other: "VectorBase") -> "VectorBase":
         """
@@ -108,6 +108,7 @@ class VectorBase(ABC):
         """
         return self.__class__(*(self.array - other.array))
 
+    @abstractmethod
     def __mul__(self, other) -> "VectorBase":
         """
         Multiply this vector by a scalar, vector, or matrix.
@@ -118,10 +119,10 @@ class VectorBase(ABC):
         Returns:
             VectorBase: A new vector representing the result of the multiplication.
         """
-        try:
-            if isinstance(other, (float, int)):
-                return self.__class__(*(self.array * other))
-        except TypeError:
+        if isinstance(other, (float, int)):
+            print(f"print from vectorbase mul other: {other}")
+            return self.__class__(*(self.array * other))
+        else:
             return NotImplemented
 
     def __rmul__(self, other) -> "VectorBase":
@@ -146,10 +147,9 @@ class VectorBase(ABC):
         Returns:
             VectorBase: A new vector representing the result of the division.
         """
-        try:
-            if isinstance(other, (float, int)):
-                return self.__class__(*(self.array / other))
-        except TypeError:
+        if isinstance(other, (float, int)):
+            return self.__class__(*(self.array / other))
+        else:
             return NotImplemented
 
     def __neg__(self) -> "VectorBase":
@@ -180,9 +180,12 @@ class VectorBase(ABC):
         Returns:
             bool: True if the vectors are equal, False otherwise.
         """
-        return np.allclose(
-            self.array, other.array, rtol=self.EPSILON, atol=self.EPSILON
-        )
+        if type(other) == type(self):
+            return np.allclose(
+                self.array, other.array, rtol=self.EPSILON, atol=self.EPSILON
+            )
+        else:
+            return False
 
     def __ne__(self, other: "VectorBase") -> bool:
         """
@@ -195,30 +198,6 @@ class VectorBase(ABC):
             bool: True if the vectors are not equal, False otherwise.
         """
         return not self == other
-
-    def __getitem__(self, index: int) -> float:
-        """
-        Get the value of the vector at the given index.
-
-        Args:
-            index (int): The index of the value to get.
-
-        Returns:
-            float: The value of the vector at the given index.
-        """
-        return self.array[index]
-
-    def __setitem__(self, index: int, value: float) -> None:
-        """
-        Set the value of the vector at the given index.
-
-        Args:
-            index (int): The index of the value to set.
-            value (float): The value to set.
-        """
-        self.array[index] = value
-        if hasattr(self, "magnitude"):
-            del self.magnitude
 
     def __len__(self) -> int:
         """
