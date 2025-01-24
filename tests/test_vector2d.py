@@ -63,7 +63,7 @@ class TestVector2D(TestCase):
         with pytest.raises(NotImplementedError) as e:
             v = Vector2D(1, 2) * Vector2D(3, 4)
             assert e.type == NotImplementedError
-            assert "* operation" in str(e.value) and "is not allowed" in str(e.value)
+            assert "* operation" in str(e.value) and "is not implemented" in str(e.value)
 
     def test_vector2d_division(self):
         v1 = Vector2D(3, 4)
@@ -75,6 +75,11 @@ class TestVector2D(TestCase):
         assert v1 == Vector2D(3, 4)
         with pytest.warns(RuntimeWarning):
             assert v1 / 0 == Vector2D(np.inf, np.inf)
+        with pytest.raises(NotImplementedError) as e:
+            res = v1 / v2
+            print(str(e.value))
+            assert e.type == NotImplementedError
+            assert "/ operation" in str(e.value) and "is not"
 
     def test_vector2d_negative(self):
         v = Vector2D(3, 4)
@@ -160,6 +165,7 @@ class TestVector2D(TestCase):
         assert v2.cross(v1) == 2
         assert v1.cross(v1) == 0
         assert v2.cross(v2) == 0
+
 
     def test_vector2d_normalize(self):
         v = Vector2D(3, 4)
@@ -350,6 +356,8 @@ class TestVector2D(TestCase):
         assert isinstance(v7, Vector2D)
         assert v7 == Vector2D(np.sin(np.pi / 4), np.cos(np.pi / 4)) * 3
 
+        # TODO: edge cases cosi >= 0 and k < 0
+
     def test_vector2d_to_tuple(self):
         v = Vector2D(3, 4)
         assert v.to_tuple() == (3, 4)
@@ -413,6 +421,20 @@ class TestVector2D(TestCase):
         assert hasattr(v, "unit")
         assert v.unit == "cm"
     
-    def test_vector2d_unit___getattr__(self):
+    def test_vector2d_unit___getattr__swizzling(self):
         v = Vector2D(3, 4)
         v.unit = "cm"
+        assert v.unit == "cm"
+        assert getattr(v, "unit") == v.__dict__["unit"]
+        assert v.__getattr__("unit") == v.__dict__["unit"]
+        assert v.xx == Vector2D(3, 3)
+        assert v.yy == Vector2D(4, 4)
+        assert v.xy == Vector2D(3, 4)
+        assert v.yx == Vector2D(4, 3)
+        assert v.x == 3
+        with pytest.raises(AttributeError) as e:
+            a = v.z
+        assert "'Vector2D' object has no attribute" in str(e.value)
+        with pytest.raises(AttributeError) as e2:
+            a = v.xz
+        assert "'Vector2D' object has no attribute" in str(e2.value)

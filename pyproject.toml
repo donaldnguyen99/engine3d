@@ -32,6 +32,12 @@ tests = [
 # pdf = ["ReportLab>=1.2", "RXP"]
 # rest = ["docutils>=0.3", "pack ==1.1, ==1.3"]
 
+[tool.pytest.ini_options]
+    addopts = "--cov=src -W ignore::DeprecationWarning -W ignore::RuntimeWarning"
+    testpaths = [
+        "tests",
+    ]
+
 [project.scripts]
 engine3d = "engine3d.engine3d:main"
 

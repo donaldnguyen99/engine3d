@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import abc
 from functools import cached_property
-from typing import Union
+from typing import Any, Union
 
 import inspect
 import numpy as np
@@ -32,7 +32,7 @@ class VectorBase(ABC):
         Returns:
             int: The dimension of this vector.
         """
-        pass # need test to cover
+        pass
     
     def __setitem__(self, index: int, value: float) -> None:
         """
@@ -60,7 +60,7 @@ class VectorBase(ABC):
         """
         return self.array[index]
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value):
         if name in {"array", "lookup"}:
             super().__setattr__(name, value)
             return
@@ -75,14 +75,44 @@ class VectorBase(ABC):
         else:
             super().__setattr__(name, value)
 
-    def __getattr__(self, name):
-        if name in {"array", "lookup"}:
-            return super().__getattr__(name) # need test to cover
+    def __getattr__(self, name: str) -> Any:
+        # Vector Swizzling
+        if len(name) == 1:
+            if name in self.lookup:
+                return self.array[self.lookup[name]]
+            else:
+                raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
         
-        if name in self.lookup:
-            return self.array[self.lookup[name]]
+        components = []
+        is_swizzling = True
+        for i in range(len(name)):
+            if name[i] in self.lookup:
+                components.append(self.array[self.lookup[name[i]]])
+            else:
+                is_swizzling = False
+                break
+            
+        if len(name) == self.dim and is_swizzling:
+            return self.__class__(*components)
+        elif len(name) < self.dim and is_swizzling:
+            pot_classes = [cls for cls in VectorBase.find_subclasses_with_value("dim", len(name)) if "Vector" in cls.__name__]
+            new_class = sorted(pot_classes, key=lambda cls: cls.__name__)[0]
+            return new_class(*components)
         else:
-            return super().__getattr__(name) # need test to cover
+            res = self.__dict__.get(name)
+            if res:
+                return res
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
+    @classmethod
+    def find_subclasses_with_value(cls, attr_name: str, attr_value) -> list[type]:
+        """Find all subclasses of a class that has a specific attribute value."""
+        subclasses = []
+        for subclass in cls.__subclasses__():
+            if hasattr(subclass, attr_name) and getattr(subclass, attr_name) == attr_value:
+                subclasses.append(subclass)
+            subclasses.extend(subclass.find_subclasses_with_value(attr_name, attr_value))
+        return subclasses        
 
     def __add__(self, other: "VectorBase") -> "VectorBase":
         """
@@ -150,7 +180,9 @@ class VectorBase(ABC):
         if isinstance(other, (float, int)):
             return self.__class__(*(self.array / other))
         else:
-            return NotImplemented
+            raise NotImplementedError(f"/ operation between {type(self)} and \
+                                      {type(other)} is not implemented. Use / \
+                                        between {type(self)} and a scalar")
 
     def __neg__(self) -> "VectorBase":
         """
@@ -259,7 +291,7 @@ class VectorBase(ABC):
         """
         if self.dim != other.dim:
             raise ValueError("Cross product is only defined for 2D or 3D vectors of the same dimension.")
-        if self.dim == 2:
+        elif self.dim == 2:
             return np.cross(self.array, other.array)
         elif self.dim == 3:
             return self.__class__(*(np.cross(self.array, other.array)))

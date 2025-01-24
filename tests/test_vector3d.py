@@ -50,6 +50,10 @@ class TestVector3D(TestCase):
         assert v1 == Vector3D(6, 8, 10)
         v1 *= 0.5
         assert v1 == Vector3D(3, 4, 5)
+        with pytest.raises(NotImplementedError) as e:
+            v = Vector3D(1, 2, 3) * Vector3D(3, 4, 5)
+        assert e.type == NotImplementedError
+        assert "* operation" in str(e.value) and "is not implemented" in str(e.value)
     
     def test_vector3d_division(self):
         v1 = Vector3D(3, 4, 5)
@@ -75,3 +79,20 @@ class TestVector3D(TestCase):
         v.x = 1
         assert "magnitude" not in v.__dict__
         assert "magnitude_squared" not in v.__dict__
+
+    def test_vector3d_cross(self):
+        v1 = Vector3D(1, 0, 0)
+        v2 = Vector3D(0, 1, 0)
+        v = v1.cross(v2)
+        assert v == Vector3D(0, 0, 1)
+
+    def test_vector3d_unit___getattr__swizzling(self):
+        v = Vector3D(1, 2, 3)
+        v.unit = "m"
+        assert v.unit == "m"
+        assert v.x == 1
+        assert v.y == 2
+        assert v.z == 3
+        assert v.xyy == Vector3D(1, 2, 2)
+        assert v.xyx == Vector3D(1, 2, 1)
+        assert v.zzx == Vector3D(3, 3, 1)

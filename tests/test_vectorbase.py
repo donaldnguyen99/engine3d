@@ -45,3 +45,32 @@ class TestVectorBase(TestCase):
         assert e.type == TypeError
         assert "Can't instantiate abstract class VectorBase2" in str(e.value)
         assert "dim" in str(e.value)
+        assert "__mul__" in str(e.value)
+
+    def test_vectorbase_dim(self):
+        with pytest.raises(Exception) as e:
+            VectorBase.dim()
+        assert e.type == TypeError
+        assert "property" in str(e.value) and "not callable" in str(e.value)
+
+    def test_vectorbase_abstract_method_pass(self):
+        class VectorBase2(VectorBase):
+            dim = 2
+            def __init__(self, a, b):
+                super().__init__(a, b)
+            
+            def get_dim(self):
+                return super().dim
+            
+            def __mul__(self, other):
+                return super().__mul__(other)
+
+            def rotate(self, angle, axis):
+                return super().rotate(angle, axis)
+
+            def rotated(self, angle, axis):
+                return super().rotated(angle, axis)
+        assert VectorBase2(1, 2).get_dim() == None
+        assert VectorBase2(1, 2).rotate(0, 0) == None
+        assert VectorBase2(1, 2).rotated(0, 0) == None
+
