@@ -356,7 +356,13 @@ class TestVector2D(TestCase):
         assert isinstance(v7, Vector2D)
         assert v7 == Vector2D(np.sin(np.pi / 4), np.cos(np.pi / 4)) * 3
 
-        # TODO: edge cases cosi >= 0 and k < 0
+    def test_vector2d_refract2(self):
+        # edge cases cosi >= 0 and k < 0
+        v = Vector2D(10, -1)
+        n = Vector2D(0, -1)
+        eta = 1.5
+        v2 = v.refract(n, eta)
+        assert v2 == Vector2D.zero()
 
     def test_vector2d_to_tuple(self):
         v = Vector2D(3, 4)

@@ -96,3 +96,55 @@ class TestVector3D(TestCase):
         assert v.xyy == Vector3D(1, 2, 2)
         assert v.xyx == Vector3D(1, 2, 1)
         assert v.zzx == Vector3D(3, 3, 1)
+
+    def test_vector3d_rotate(self):
+        v = Vector3D(1, 2, 3)
+        v.rotate(np.pi / 2, Vector3D(0, 0, 1))
+        assert v == Vector3D(-2, 1, 3)
+        # add more tests
+        
+    def test_orthonormal_basis(self):
+        v = Vector3D(1, 0, 0)
+        v1, v2, v3 = v.orthonormal_basis()
+        assert v1 == Vector3D(1, 0, 0)
+        assert v2 == Vector3D(0, 1, 0)
+        assert v3 == Vector3D(0, 0, 1)
+        # add more tests
+
+        u = Vector3D(0, 1, 0)
+        u1, u2, u3 = u.orthonormal_basis()
+        assert u1 == Vector3D(0, 1, 0)
+        assert u2 == Vector3D(0, 0, 1)
+        assert u3 == Vector3D(1, 0, 0)
+        # add more tests
+    
+    def test_azimuth_elevation_between(self):
+        v1 = Vector3D(1, 0, 0)
+        v2 = Vector3D(0, 1, 0)
+        azimuth, elevation = v1.azimuth_elevation_between(v2)
+        assert azimuth == np.pi / 2
+        assert elevation == 0
+
+        v3 = Vector3D(0, 0, 1)
+        azimuth, elevation = v1.azimuth_elevation_between(v3)
+        assert azimuth == 0
+        assert elevation == np.pi / 2
+
+        azimuth, elevation = v3.azimuth_elevation_between(v2)
+        assert azimuth == 0
+        assert elevation == -np.pi / 2
+        # add more tests
+
+    def test_rotate_by_azimuth_elevation(self):
+        v1 = Vector3D(1, 0, 0)
+        v2 = v1.rotate_by_azimuth_elevation(np.pi / 2, 0)
+        assert v2 == Vector3D(0, 1, 0)
+
+        v3 = v1.rotate_by_azimuth_elevation(0, np.pi / 2)
+        assert v3 == Vector3D(0, 0, 1)
+
+        with pytest.raises(ValueError) as e:
+            v4 = v3.rotate_by_azimuth_elevation(0, -np.pi / 2)
+        v5 = v3.rotate_by_azimuth_elevation(np.pi / 4, 0)
+        assert v5 == Vector3D(0, 0, 1)
+        # add more tests

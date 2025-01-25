@@ -67,11 +67,11 @@ class Vector3D(VectorBase):
 
 
     def rotate(self, angle: float, axis: "VectorBase") -> "VectorBase":
-        self = self.rotated(angle, axis)
+        self.array = self.rotated(angle, axis).array
         return self
 
     def rotated(self, angle: float, axis: "VectorBase") -> "VectorBase":
-        return self.cross(axis) * np.sin(angle) + self * np.cos(angle) + axis * self.dot(axis) * (1 - np.cos(angle))
+        return -self.cross(axis) * np.sin(angle) + self * np.cos(angle) + axis * self.dot(axis) * (1 - np.cos(angle))
     
     def orthonormal_basis(self) -> tuple[VectorBase, VectorBase, VectorBase]:
         """
@@ -103,11 +103,13 @@ class Vector3D(VectorBase):
         Returns:
             tuple[float, float]: The azimuth and elevation.
         """
-        azimuth = np.arctan2(other.y - self.y, other.x - self.x)
-        elevation = np.arctan2(other.z - self.z, np.linalg.norm(other.array[:2] - self.array[:2]))
+        azimuth = np.arctan2(self.xy.cross(other.xy), self.xy.dot(other.xy))
+        v = Vector2D(other.z, other.xy.magnitude)
+        u = Vector2D(self.z, self.xy.magnitude)
+        elevation = np.arctan2(-u.cross(v), u.dot(v)) # Need to optimize
         return azimuth, elevation
     
-    def rotate_by_some_azimuth_elevation(self, azimuth: float, elevation: float) -> "VectorBase":
+    def rotate_by_azimuth_elevation(self, azimuth: float, elevation: float) -> "Vector3D":
         """
         Rotates a vector by a change of azimuth angle and elevation.
 
@@ -119,6 +121,9 @@ class Vector3D(VectorBase):
             VectorBase: The rotated vector.
         """
         if abs(abs(self.normalized().dot(Vector3D(0, 0, 1))) - 1) < self.EPSILON:
-            raise ValueError("The vector is parallel to the z-axis.")
+            if abs(elevation) > self.EPSILON:
+                raise ValueError("The vector is parallel to the z-axis.")
+            else:
+                return self
         axis1 = self.cross(Vector3D(0, 0, 1))
         return self.rotated(elevation, axis1).rotated(azimuth, Vector3D(0, 0, 1))

@@ -484,7 +484,9 @@ class VectorBase(ABC):
             cosi = -cosi
         else:
             normal_normalized = -normal_normalized
+        print(f"cosi: {cosi}")
         k = 1.0 - eta * eta * (1.0 - cosi * cosi)
+        print(f"k: {k}")
         if k < 0.0:
             return self.__class__.zero()
         else:
