@@ -6,6 +6,7 @@ dependencies:
   - python>=3.8, <3.13
   - pytest
   - pytest-cov
+  - black
   - ipykernel
   - ipython
   - matplotlib

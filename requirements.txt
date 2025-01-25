@@ -1,0 +1,8 @@
+pytest
+pytest-cov
+ipykernel
+ipython
+matplotlib
+numpy
+numba
+pygame
