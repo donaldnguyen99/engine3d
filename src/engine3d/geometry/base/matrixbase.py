@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import abc
 from functools import cached_property
+from typing import Union
 
 import numpy as np
 
@@ -9,16 +10,36 @@ from engine3d.geometry.base.vectorbase import VectorBase
 class MatrixBase(ABC):
 
     array: np.ndarray
+    EPSILON: float = 1e-15
 
     def __init__(self, *args) -> None:
         """
-        Initialize the matrix.
+        Initializes a MatrixBase object based on the provided arguments.
+
+        The constructor can accept the following types of inputs:
+        
+        - A 2-dimensional numpy array to initialize the matrix with values.
+        - Another MatrixBase object to create a copy.
+        - A tuple (rows, cols) specifying the dimensions of an empty matrix.
+        - A list of lists to initialize the matrix with values.
+        - Two integers specifying the number of rows and columns.
 
         Args:
-            array (np.ndarray): The array to initialize the matrix with.
+            *args: Variable length argument list. It can be one of the following:
+                - np.ndarray: A 2D numpy array representing the matrix.
+                - MatrixBase: Another MatrixBase object to copy.
+                - tuple[int, int]: A tuple specifying the number of rows and columns.
+                - list[list]: A list of lists representing the matrix data.
+                - int, int: Two integers specifying the number of rows and columns.
+
+        Raises:
+            ValueError: If the provided arguments do not match the expected types or format.
         """
+        assert type(self.dim) == tuple, "dim must be a tuple"
+        assert len(self.dim) == 2, "dim must be a tuple of length 2"
+        assert all(isinstance(d, int) for d in self.dim), "dim must be a tuple of integers"
         if len(args) == 0:
-            self.array = np.zeros((2, 2))
+            self.array = np.zeros(self.dim)
         elif len(args) == 1:
             if isinstance(args[0], np.ndarray):
                 self.array = args[0]
@@ -31,14 +52,14 @@ class MatrixBase(ABC):
             elif isinstance(args[0], list):
                 self.array = np.array(args[0])
             else:
-                raise TypeError(f"Cannot create a matrix from {args[0]}")
+                raise ValueError(f"Cannot create a matrix from {args[0]}")
         elif len(args) == 2:
             if isinstance(args[0], int) and isinstance(args[1], int):
                 self.array = np.zeros(args)
             else:
-                raise TypeError(f"Cannot create a matrix from {args}")
+                raise ValueError(f"Cannot create a matrix from {args}")
         else:
-            raise TypeError(f"Cannot create a matrix from {args}")
+            raise ValueError(f"Cannot create a matrix from {args}")
 
     @property
     @abstractmethod
@@ -115,7 +136,7 @@ class MatrixBase(ABC):
         """
         return self.__class__(self.array.T)
     
-    def __matmul__(self, other: "MatrixBase" | "VectorBase") -> "MatrixBase":
+    def __matmul__(self, other: Union["MatrixBase", "VectorBase"]) -> "MatrixBase":
         """
         Returns the matrix product of this matrix and another matrix.
 
@@ -125,46 +146,29 @@ class MatrixBase(ABC):
         Returns:
             MatrixBase: The matrix product of this matrix and the other matrix.
         """
-        try:
-            if isinstance(other, MatrixBase):
-                return self.__class__(self.array @ other.array)
-            elif isinstance(other, VectorBase):
-                return other.__class__(self.array @ other.array)
-        except:
-            raise TypeError(f"Cannot multiply {self.__class__.__name__} by {other.__class__.__name__}.")
+        if isinstance(other, MatrixBase):
+            return self.__class__(self.array @ other.array)
+        elif isinstance(other, VectorBase):
+            return other.__class__(*(self.array @ other.array))
+        raise TypeError(f"Cannot matrix multiply {self.__class__.__name__} by {other.__class__.__name__} using @." + (" Use * instead." if isinstance(other, (int, float)) else ""))
+
+    def __imatmul__(self, other: Union["MatrixBase", "VectorBase"]) -> "MatrixBase":
+        """
+        Returns the matrix product of this matrix and another matrix.
+
+        Args:
+            other (MatrixBase): The other matrix to multiply this matrix by.
+
+        Returns:
+            MatrixBase: The matrix product of this matrix and the other matrix.
+        """
+        if isinstance(other, MatrixBase):
+            self.array = self.array @ other.array
+            return self
+        raise TypeError(f"Cannot matrix multiply {self.__class__.__name__} by {other.__class__.__name__} using @." + (" Use * instead." if isinstance(other, (int, float)) else ""))
+        
     
-    def __rmatmul__(self, other: "MatrixBase" | "VectorBase") -> "MatrixBase":
-        """
-        Returns the matrix product of this matrix and another matrix.
-
-        Args:
-            other (MatrixBase): The other matrix to multiply this matrix by.
-
-        Returns:
-            MatrixBase: The matrix product of this matrix and the other matrix.
-        """
-        try:
-            if isinstance(other, MatrixBase):
-                return self.__class__(other.array @ self.array)
-            elif isinstance(other, VectorBase):
-                return other.__class__(other.array @ self.array)
-        except:
-            raise TypeError(f"Cannot multiply {other.__class__.__name__} by {self.__class__.__name__}.")
-
-    def __imatmul__(self, other: "MatrixBase" | "VectorBase") -> "MatrixBase":
-        """
-        Returns the matrix product of this matrix and another matrix.
-
-        Args:
-            other (MatrixBase): The other matrix to multiply this matrix by.
-
-        Returns:
-            MatrixBase: The matrix product of this matrix and the other matrix.
-        """
-        self.array = self.array @ other.array
-        return self
-    
-    def __mul__(self, other: float | int) -> "MatrixBase":
+    def __mul__(self, other: Union[float, int]) -> "MatrixBase":
         """
         Returns the matrix product of this matrix and a scalar.
 
@@ -174,9 +178,11 @@ class MatrixBase(ABC):
         Returns:
             MatrixBase: The matrix product of this matrix and the scalar.
         """
-        return self.__class__(self.array * other)
+        if isinstance(other, (float, int)):
+            return self.__class__(self.array * other)
+        raise TypeError(f"Cannot multiply {self.__class__.__name__} by {other.__class__.__name__} using *.")
     
-    def __rmul__(self, other: float | int) -> "MatrixBase":
+    def __rmul__(self, other: Union[float, int]) -> "MatrixBase":
         """
         Returns the matrix product of this matrix and a scalar.
 
@@ -188,9 +194,9 @@ class MatrixBase(ABC):
         """
         return self.__mul__(other)
     
-    def __imul__(self, other: float | int) -> "MatrixBase":
+    def __imul__(self, other: Union[float, int]) -> "MatrixBase":
         """
-        Returns the matrix product of this matrix and a scalar.
+        Returns the matrix product of this matrix and a scalar, performed inplace.
 
         Args:
             other (float | int): The scalar to multiply this matrix by.
@@ -198,21 +204,60 @@ class MatrixBase(ABC):
         Returns:
             MatrixBase: The matrix product of this matrix and the scalar.
         """
-        self.array = self.array * other
-        return self
+        if isinstance(other, (float, int)):
+            self.array *= other
+            return self
+        raise TypeError(f"Cannot multiply {self.__class__.__name__} by {other.__class__.__name__} using *.")
+        
     
-    def __truediv__(self, other: float | int) -> "MatrixBase":
+    def __truediv__(self, other: Union[float, int]) -> "MatrixBase":
         """
-        Returns the matrix product of this matrix and a scalar.
+        Returns the element-wise quotient of this matrix and a scalar.
 
         Args:
             other (float | int): The scalar to multiply this matrix by.
 
         Returns:
-            MatrixBase: The matrix product of this matrix and the scalar.
+            MatrixBase: The element-wise quotient of this matrix and the scalar.
         """
-        return self.__class__(self.array / other)
+        if isinstance(other, (float, int)):
+            return self.__class__((self.array / other))
+        else:
+            raise NotImplementedError(f"/ operation between {type(self)} and \
+                                      {type(other)} is not implemented. Use / \
+                                        between {type(self)} and a scalar")
     
+    def __itruediv__(self, other: Union[float, int]) -> "MatrixBase":
+        """
+        Returns the element-wise quotient of this matrix and a scalar, performed inplace.
+
+        Args:
+            other (float | int): The scalar to multiply this matrix by.
+
+        Returns:
+            MatrixBase: The element-wise quotient of this matrix and the scalar.
+        """
+        if isinstance(other, (float, int)):
+            self.array = self.array.astype(np.float64)
+            self.array /= other
+            return self
+        else:
+            raise NotImplementedError(f"/ operation between {type(self)} and \
+                                      {type(other)} is not implemented. Use / \
+                                        between {type(self)} and a scalar")
+    
+    def __eq__(self, other: "MatrixBase"):
+        """
+        Check if this matrix is equal to another matrix.
+
+        Args:
+            other (MatrixBase): The matrix to check for equality.
+
+        Returns:
+            bool: True if the matrix are equal, False otherwise.
+        """
+        return type(other) == type(self) and np.all(self.array == other.array)
+
     def __neg__(self) -> "MatrixBase":
         """
         Returns the negative of the matrix.
@@ -263,7 +308,7 @@ class MatrixBase(ABC):
         Returns:
             float: The determinant of the matrix.
         """
-        return np.linalg.det(self.array)
+        return float(np.linalg.det(self.array))
     
     @property
     def transpose(self) -> "MatrixBase":
@@ -283,7 +328,7 @@ class MatrixBase(ABC):
         Returns:
             float: The trace of the matrix.
         """
-        return np.trace(self.array)
+        return float(np.trace(self.array))
     
     def get_row(self, row: int) -> "VectorBase":
         """
@@ -295,7 +340,7 @@ class MatrixBase(ABC):
         Returns:
             VectorBase: The row at the given index.
         """
-        return self.array[row]
+        return self.array[row, :]
     
     def get_column(self, column: int) -> "VectorBase":
         """
