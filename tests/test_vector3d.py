@@ -3,7 +3,7 @@ import pytest
 
 from unittest import TestCase
 
-from engine3d.geometry.vector import Vector3D
+from engine3d.math.vector import Vector3D
 
 
 class TestVector3D(TestCase):

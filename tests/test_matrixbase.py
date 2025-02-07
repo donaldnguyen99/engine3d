@@ -4,7 +4,7 @@ import pytest
 # For vscode users to detect both test classes
 from unittest import TestCase
 
-from engine3d.geometry.base.matrixbase import MatrixBase
+from engine3d.math.base.matrixbase import MatrixBase
 
 class TestMatrixBase(TestCase):
     def test_matrixbase___init__(self):
@@ -221,6 +221,10 @@ class TestMatrixBase(TestCase):
                 super().__init__(*args)
         m1 = MyMatrix([[1, 2], [3, 4]])
         assert m1 == MyMatrix([[1, 2], [3, 4]])
+        m2 = MyMatrix([[1, 2], [3, 4]]) + 1e-15 * MyMatrix([[1, 2], [3, 4]])
+        assert m1 == m2
+        m3 = MyMatrix([[1, 2], [3, 4]]) + 1e-14 * MyMatrix([[1, 2], [3, 4]])
+        assert m1 != m3
 
     def test_matrixbase___neg__(self):
         class MyMatrix(MatrixBase):

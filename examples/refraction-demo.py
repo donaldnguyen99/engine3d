@@ -2,7 +2,7 @@ import numpy as np
 import pygame as pg
 
 from engine3d.renderer import Renderer
-from engine3d.geometry.vector import Vector2D
+from engine3d.math.vector import Vector2D
 
 
 class MyRenderer(Renderer):

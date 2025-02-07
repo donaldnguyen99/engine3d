@@ -1,22 +1,45 @@
 import numpy as np
 
-from engine3d.geometry.base.matrixbase import MatrixBase
-from engine3d.geometry.base.vectorbase import VectorBase
+from engine3d.math.base.matrixbase import MatrixBase
+from engine3d.math.base.vectorbase import VectorBase
 
 
-class Matrix2D(MatrixBase):
-    def __init__(self, *args, **kwargs) -> "Matrix2D":
+class Matrix2x2(MatrixBase):
+
+    dim = (2, 2)
+
+    def __init__(self, *args) -> "Matrix2x2":
         """
         Initialize the matrix.
         """
-        if "shape" in kwargs:
-            super().__init__(np.zeros(kwargs["shape"]))
         super().__init__(*args)
 
 
-class ScaleMatrix2D(Matrix2D):
+class Matrix3x3(MatrixBase):
+
+    dim = (3, 3)
+
+    def __init__(self, *args) -> "Matrix3x3":
+        """
+        Initialize the matrix.
+        """
+        super().__init__(*args)
+
+
+class Matrix4x4(MatrixBase):
+
+    dim = (4, 4)
+
+    def __init__(self, *args) -> "Matrix3x3":
+        """
+        Initialize the matrix.
+        """
+        super().__init__(*args)
+
+
+class ScaleMatrix2x2Cartesian(Matrix2x2):
     """
-    A scale matrix.
+    A scale matrix for cartesian coordinates in 2D vectors.
     """
 
     def __init__(self, vector: VectorBase) -> None:
@@ -31,7 +54,8 @@ class ScaleMatrix2D(Matrix2D):
             [0, vector.y]
         ]))
 
-class RotationMatrix2D(Matrix2D):  
+
+class RotationMatrix2x2Cartesian(Matrix2x2):  
     """
     A rotation matrix.
     """
@@ -49,7 +73,7 @@ class RotationMatrix2D(Matrix2D):
         ]))
 
 
-class TranslationMatrix2D(Matrix2D):
+class TranslationMatrix3x3Homogeneous(Matrix3x3):
     """
     A translation matrix.
     """
@@ -67,12 +91,4 @@ class TranslationMatrix2D(Matrix2D):
             [0, 0, 1]
         ]))
 
-
-class Matrix3D(MatrixBase):
-    def __init__(self, *args, **kwargs) -> "Matrix3D":
-        """
-        Initialize the matrix.
-        """
-        if "shape" in kwargs:
-            super().__init__(np.zeros(kwargs["shape"]))
-        super().__init__(*args)
+# TODO: add more matrix types

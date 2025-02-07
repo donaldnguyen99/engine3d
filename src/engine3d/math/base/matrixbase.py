@@ -5,7 +5,7 @@ from typing import Union
 
 import numpy as np
 
-from engine3d.geometry.base.vectorbase import VectorBase
+from engine3d.math.base.vectorbase import VectorBase
 
 class MatrixBase(ABC):
 
@@ -256,7 +256,7 @@ class MatrixBase(ABC):
         Returns:
             bool: True if the matrix are equal, False otherwise.
         """
-        return type(other) == type(self) and np.all(self.array == other.array)
+        return type(other) == type(self) and np.allclose(self.array, other.array, atol=self.EPSILON, rtol=self.EPSILON)
 
     def __neg__(self) -> "MatrixBase":
         """

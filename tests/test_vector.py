@@ -4,8 +4,8 @@ import pytest
 # For vscode users to detect both test classes
 from unittest import TestCase
 
-from engine3d.geometry.base.vectorbase import VectorBase
-from engine3d.geometry.vector import Vector2D, Vector3D
+from engine3d.math.base.vectorbase import VectorBase
+from engine3d.math.vector import Vector2D, Vector3D
 
 class TestVector(TestCase):
     def test_vector2d_add_vector2d_vector3d(self):

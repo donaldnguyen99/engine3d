@@ -1,6 +1,6 @@
 import numpy as np
 
-from engine3d.geometry.vector import Vector3D
+from engine3d.math.vector import Vector3D
 
 
 class Object3D:

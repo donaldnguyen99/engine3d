@@ -4,12 +4,12 @@ import pytest
 # For vscode users to detect both test classes
 from unittest import TestCase
 
-from engine3d.geometry.base.vectorbase import VectorBase
-from engine3d.geometry.base.matrixbase import MatrixBase
-from engine3d.geometry.matrix import *
+from engine3d.math.base.vectorbase import VectorBase
+from engine3d.math.base.matrixbase import MatrixBase
+from engine3d.math.matrix import *
 
-class TestMatrixMultVector(TestCase):
-    def test_matrixbase___init__(self):
+class TestMatrix(TestCase):
+    def test_matrix_mult_vector(self):
         class MyMatrix(MatrixBase):
             dim = (2, 2)
             def __init__(self, *args) -> None:
@@ -27,3 +27,5 @@ class TestMatrixMultVector(TestCase):
         m = MyMatrix([[1, 2], [3, 4]])
         v = MyVector(2, 3)
         assert m @ v == MyVector(8, 18)
+    
+    

@@ -5,7 +5,7 @@ from functools import cached_property
 
 import numpy as np
 
-from engine3d.geometry.base.vectorbase import VectorBase
+from engine3d.math.base.vectorbase import VectorBase
 
 
 class Vector2D(VectorBase):
@@ -127,3 +127,24 @@ class Vector3D(VectorBase):
                 return self
         axis1 = self.cross(Vector3D(0, 0, 1))
         return self.rotated(elevation, axis1).rotated(azimuth, Vector3D(0, 0, 1))
+    
+
+class Vector4D(VectorBase):
+
+    dim = 4
+
+    def __init__(self, x: float, y: float, z: float, w: float) -> None:
+        super().__init__(x, y, z, w)
+    
+    def __mul__(self, other):
+        res = super().__mul__(other)
+        if res == NotImplemented:
+            raise NotImplementedError(f"* operation between Vector3D and {type(other)} \
+                             is not implemented. * must be followed by a scalar")
+        return res
+    
+    def rotate(self, *args):
+        pass
+
+    def rotated(self, *args):
+        pass
