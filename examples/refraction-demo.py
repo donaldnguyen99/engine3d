@@ -8,13 +8,6 @@ from engine3d.math.vector import Vector2D
 class MyRenderer(Renderer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.SCREEN_WIDTH = args[0]
-        self.SCREEN_HEIGHT = args[1]
-        self.title = args[2]
-        self.fps = args[3]
-        self.H_SCREEN_WIDTH = self.SCREEN_WIDTH // 2
-        self.H_SCREEN_HEIGHT = self.SCREEN_HEIGHT // 2
-        self.center = pg.math.Vector2(self.H_SCREEN_WIDTH, self.H_SCREEN_HEIGHT)
         self.angle = np.pi / 4
 
     def calc_ray2(self) -> None:
@@ -47,8 +40,8 @@ class MyRenderer(Renderer):
         self.calc_ray()
         # self.calc_ray2()
         pg.draw.line(self.screen, (0,0,255), 
-                     pg.math.Vector2(0, self.H_SCREEN_HEIGHT), 
-                     pg.math.Vector2(self.SCREEN_WIDTH, self.H_SCREEN_HEIGHT))
+                     pg.math.Vector2(0, self.half_height), 
+                     pg.math.Vector2(self.width, self.half_height))
         pg.draw.line(self.screen, (0,255,0),
                      self.center,
                      self.center - self.ray * 10)

@@ -64,6 +64,17 @@ class Renderer(RendererBase):
     def draw(self) -> None:
         self.screen.fill(pg.Color("darkslategray"))
         
-
     def update(self) -> None:
         pg.display.flip()
+
+    @property
+    def half_width(self) -> int:
+        return self.width // 2
+    
+    @property
+    def half_height(self) -> int:
+        return self.height // 2
+    
+    @property
+    def center(self) -> pg.math.Vector2:
+        return pg.math.Vector2(self.half_width, self.half_height)
