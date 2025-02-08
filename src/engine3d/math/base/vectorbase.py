@@ -21,7 +21,6 @@ class VectorBase(ABC):
         self.lookup = {arg[0]: i for i, arg in enumerate(arg_names_and_vals)}
         for i, arg in enumerate(arg_names_and_vals):
             setattr(self, arg[0], arg[1])
-        print("print from vectorbase: ", str(arg_names_and_vals))
 
     @property
     @abstractmethod
@@ -150,7 +149,6 @@ class VectorBase(ABC):
             VectorBase: A new vector representing the result of the multiplication.
         """
         if isinstance(other, (float, int)):
-            print(f"print from vectorbase mul other: {other}")
             return self.__class__(*(self.array * other))
         else:
             return NotImplemented
@@ -484,9 +482,7 @@ class VectorBase(ABC):
             cosi = -cosi
         else:
             normal_normalized = -normal_normalized
-        print(f"cosi: {cosi}")
         k = 1.0 - eta * eta * (1.0 - cosi * cosi)
-        print(f"k: {k}")
         if k < 0.0:
             return self.__class__.zero()
         else:
