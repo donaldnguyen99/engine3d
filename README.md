@@ -1,5 +1,7 @@
 # Engine 3D
 
+![cube](images/cube.gif)
+
 A simple 3D engine written in Python using Pygame (for learning purposes).
 
 ## Installation
